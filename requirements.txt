@@ -1,0 +1,7 @@
+flask
+gunicorn
+pandas
+requests
+openpyxl
+werkzeug
+sqlite3
