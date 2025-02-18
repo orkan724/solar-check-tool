@@ -22,16 +22,26 @@ def check_solar_installation(address):
         response = requests.get(url, headers=headers, params=params, timeout=15, verify=False)
         response.raise_for_status()
 
-        print(f"Antwort für {address}: {response.text}")  # Debugging: Antwort ausgeben
+        # Debugging: API-Antwort in Log-Datei speichern
+        with open("api_debug.log", "a", encoding="utf-8") as log_file:
+            log_file.write(f"API-Antwort für {address}:
+{response.text}
 
-        if response.text.strip():
-            try:
-                data = response.json()
-                return "Ja" if data.get("results") else "Nein"
-            except requests.exceptions.JSONDecodeError:
-                return f"Ungültige JSON-Antwort: {response.text}"  # Antwort in Excel ausgeben
-        else:
+")
+
+        # Falls die API HTML zurückgibt, ist etwas falsch
+        if "<html>" in response.text.lower():
+            return f"Fehler: API liefert HTML statt JSON"
+
+        # Falls die API-Antwort leer ist
+        if not response.text.strip():
             return "Keine Antwort von API"
+
+        try:
+            data = response.json()
+            return "Ja" if data.get("results") else "Nein"
+        except requests.exceptions.JSONDecodeError:
+            return f"Ungültige JSON-Antwort: {response.text}"
 
     except requests.exceptions.Timeout:
         return "API-Zeitüberschreitung"
